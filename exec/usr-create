@@ -5,8 +5,31 @@ function main {
   source "$shome/script/profile"
 
   local nm_user="${1}"; shift
+  local email="${1}"; shift
+  local phone="${1}"; shift
+  local password="a-A-${RANDOM}-${RANDOM}-$$-$(date +%s)"
 
-  local json_create_user="$(jq -n --arg username "${nm_user}" '{UserPoolId: env.USR_POOL_ID, Username: $username, MessageAction: "SUPPRESS"}')"
+  local json_create_user="$(jq -n \
+    --arg username "${nm_user}" \
+    --arg password "${password}" \
+    --arg email "${email}" \
+    --arg phone "${phone}" \
+    '{
+      UserPoolId: env.USR_POOL_ID,
+      Username: $username, 
+      MessageAction: "SUPPRESS",
+      TemporaryPassword: $password,
+      UserAttributes: [
+        {
+            Name: "email",
+            Value: $email
+        },
+        {
+            Name: "phone_number",
+            Value: $phone
+        }
+      ]
+    }')"
   
   exec aws cognito-idp admin-create-user --cli-input-json "$json_create_user"
 }
