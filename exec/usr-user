@@ -4,8 +4,6 @@ function main {
   local shome="$(cd -P -- "${BASH_SOURCE%/*}/.." && pwd -P)"
   source "$shome/script/profile"
 
-  local json_list_user="$(jq -n '{ UserPoolId: env.USR_POOL_ID, Limit: 60 }')"
-
   if [[ -z "${1:-}" ]]; then
     aws cognito-idp list-users --user-pool-id "${USR_POOL_ID}" | jq 'reduce .Users[] as $ele ({}; .[$ele.Username] = $ele)'
     return $?
@@ -13,7 +11,13 @@ function main {
 
   local nm_user="${1}"; shift 
 
-  exec aws cognito-idp describe-user --cli-input-json "${json_user}" | jq -r "$@"
+  local json_get_user="$(jq -n --arg username "${nm_user}" '{ UserPoolId: env.USR_POOL_ID, Username: $username }')"
+
+  if [[ -z "${1:-}" ]]; then
+    set -- .
+  fi
+
+  exec aws cognito-idp admin-get-user --cli-input-json "${json_get_user}" | jq -r "$@"
 }
 
 source sub "$BASH_SOURCE" "$@"

@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+function main {
+  local shome="$(cd -P -- "${BASH_SOURCE%/*}/.." && pwd -P)"
+  source "$shome/script/profile"
+
+  local nm_user="${1}"; shift
+
+  local json_create_user="$(jq -n --arg username "${nm_user}" '{UserPoolId: env.USR_POOL_ID, Username: $username, MessageAction: "SUPPRESS"}')"
+  
+  exec aws cognito-idp admin-create-user --cli-input-json "$json_create_user"
+}
+
+source sub "$BASH_SOURCE" "$@"
