@@ -13,11 +13,7 @@ function main {
 
   local json_get_user="$(jq -n --arg username "${nm_user}" '{ UserPoolId: env.USR_POOL_ID, Username: $username }')"
 
-  if [[ -z "${1:-}" ]]; then
-    set -- .
-  fi
-
-  exec aws cognito-idp admin-get-user --cli-input-json "${json_get_user}" | jq -r "$@"
+  exec aws cognito-idp admin-get-user --cli-input-json "${json_get_user}"
 }
 
 source sub "$BASH_SOURCE" "$@"

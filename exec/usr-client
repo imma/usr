@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+function main {
+  local shome="$(cd -P -- "${BASH_SOURCE%/*}/.." && pwd -P)"
+  source "$shome/script/profile"
+
+  if [[ -z "${1:-}" ]]; then
+    aws cognito-idp list-user-pool-clients --user-pool-id "${USR_POOL_ID}" --max-results 60 | jq 'reduce .UserPoolClients[] as $ele ({}; .[$ele.ClientName] = $ele)'
+    return $?
+  fi
+
+  local nm_client="${1}"; shift 
+  export USR_CLIENT_ID="$(usr client | jq -r --arg client "$nm_client" '.[$client].ClientId')"
+
+  local json_get_client="$(jq -n '{ UserPoolId: env.USR_POOL_ID, ClientId: env.USR_CLIENT_ID}')"
+
+  exec aws cognito-idp describe-user-pool-client --cli-input-json "${json_get_client}" | jq .UserPoolClient
+}
+
+source sub "$BASH_SOURCE" "$@"

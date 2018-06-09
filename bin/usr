@@ -4,25 +4,52 @@ function main {
   local shome="$(cd -P -- "${BASH_SOURCE%/*}/.." && pwd -P)"
   source "$shome/script/profile"
 
+  # usr
   if [[ -z "${1:-}" ]]; then
-    exec usr list
+    exec usr pool
   fi
 
+  # usr $pool
   local nm_user_pool="${1}"; shift
+  export USR_POOL_ID="$(usr pool "${nm_user_pool}" | jq -r .Id)"
 
-  if ! type -P usr-"${1:-}" >/dev/null; then
-    if [[ -z "${1:-}" ]]; then
-      exec usr list "${nm_user_pool}"
-      return $?
-    fi
+  # usr
+  if [[ -z "${1:-}" ]]; then
+    exec usr user
   fi
 
-  if ! type -P usr-"${1:-}" >/dev/null; then
-    set -- user "$@"
+  # usr action?
+  if type -P usr-"${1:-}" >/dev/null; then
+    exec usr "$@"
   fi
 
-  export USR_POOL_ID="$(usr list "${nm_user_pool}" .Id)"
-  exec usr "$@"
+  # usr $user
+  local nm_user_name="${1}"; shift
+  export USR_POOL_ID="$(usr pool "${nm_user_pool}" | jq -r .Id)"
+
+  # usr
+  if [[ -z "${1:-}" ]]; then
+    exec usr user
+  fi
+
+  # usr action?
+  if type -P usr-"${1:-}" >/dev/null; then
+    exec usr "$@"
+  fi
+
+  # usr $client
+  local nm_client="${1}"; shift
+  export USR_CLIENT_ID="$(usr client "${nm_client}" | jq -r .ClientId)"
+
+  # usr
+  if [[ -z "${1:-}" ]]; then
+    exec usr client
+  fi
+
+  # usr action?
+  if type -P usr-"${1:-}" >/dev/null; then
+    exec usr "$@"
+  fi
 }
 
 source sub "$BASH_SOURCE" "$@"

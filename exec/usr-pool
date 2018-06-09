@@ -13,11 +13,7 @@ function main {
 
   local json_user_pool="$(aws cognito-idp list-user-pools --max-results 60 | jq -r --arg pool "${nm_user_pool}" '.UserPools | map(select(.Name == $pool))[] | { UserPoolId: .Id}')"
 
-  if [[ -z "${1:-}" ]]; then
-    set -- .
-  fi
-
-  exec aws cognito-idp describe-user-pool --cli-input-json "${json_user_pool}" | jq .UserPool | jq -r "$@"
+  exec aws cognito-idp describe-user-pool --cli-input-json "${json_user_pool}" | jq .UserPool
 }
 
 source sub "$BASH_SOURCE" "$@"
