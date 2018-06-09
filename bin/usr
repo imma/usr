@@ -6,12 +6,21 @@ function main {
 
   if [[ -z "${1:-}" ]]; then
     exec usr list
-    return 1
+    return $?
   fi
 
   local nm_user_pool="${1}"; shift
 
-  export USR_POOL_ID="$(usr list "${nm_user_pool}" .Id)"
+  if type -P usr-"${1:-}" >/dev/null; then
+    export USR_POOL_ID="$(usr list "${nm_user_pool}" .Id)"
+    exec usr "$@"
+    return $?
+  fi
+
+  if [[ -z "${1:-}" ]]; then
+    set -- .
+  fi
+  usr list "${nm_user_pool}" | jq -r "$@"
 }
 
 source sub "$BASH_SOURCE" "$@"
