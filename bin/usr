@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+function main {
+  local shome="$(cd -P -- "${BASH_SOURCE%/*}/.." && pwd -P)"
+  source "$shome/script/profile"
+
+  if [[ -z "${1:-}" ]]; then
+    exec usr list
+    return 1
+  fi
+
+  local nm_user_pool="${1}"; shift
+
+  export USR_POOL_ID="$(usr list "${nm_user_pool}" .Id)"
+}
+
+source sub "$BASH_SOURCE" "$@"
