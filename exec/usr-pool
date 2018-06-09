@@ -5,13 +5,13 @@ function main {
   source "$shome/script/profile"
 
   if [[ -z "${1:-}" ]]; then
-    aws cognito-idp list-user-pools --max-results 60 | jq -r '.UserPools[] | "\(.Id) \(.Name)"'
+    aws cognito-idp list-user-pools --max-results 60 | jq -r 'reduce .UserPools[] as $ele ({}; .[$ele.Name] = $ele)'
     return $?
   fi
 
   local nm_user_pool="${1}"; shift 
 
-  local json_user_pool="$(aws cognito-idp list-user-pools --max-results 60 | jq -r --arg pool "${nm_user_pool}" '.UserPools | map(select(.Name == $pool))[] | { UserPoolId: .Id}')"
+  local json_user_pool="$(usr pool | jq -r --arg pool "${nm_user_pool}" '{ UserPoolId: .[$pool].Id}')"
 
   exec aws cognito-idp describe-user-pool --cli-input-json "${json_user_pool}" | jq .UserPool
 }

@@ -29,7 +29,7 @@ function main {
 
   # usr
   if [[ -z "${1:-}" ]]; then
-    exec usr user
+    exec usr user "${nm_user_name}"
   fi
 
   # usr action?
@@ -43,7 +43,7 @@ function main {
 
   # usr
   if [[ -z "${1:-}" ]]; then
-    exec usr client
+    exec usr client "${nm_client}"
   fi
 
   # usr action?
